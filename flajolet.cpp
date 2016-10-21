@@ -18,12 +18,7 @@ std::vector<std::vector<size_t>> getHashFunctions(size_t functions_count, size_t
 		func.reserve(radix);
 		for (size_t h = 0; h < radix; ++h) {
 			size_t m = 0;
-			while (true) {
-				m = size_t(rand());
-				if (m % 2 == 0) {
-					break;
-				}
-			}
+			m = size_t(rand());
 			func.push_back(m);
 		}
 		result.push_back(func);
@@ -39,8 +34,7 @@ private:
 	static constexpr double phi = 0.77351;
 
 	size_t findFirstSignBit(size_t value) const {
-		value >>= 1;
-		size_t i = 1;
+		size_t i = 0;
 		while (!(value & 1) && i < R) {
 			value >>= 1;
 			++i;
@@ -54,7 +48,9 @@ public:
 
 	void Add(const T& value) {
 		size_t hash = hashfunc(value);
-		bset.set(findFirstSignBit(hash));
+		size_t bit = findFirstSignBit(hash);
+		if (bit)
+			bset.set(bit);
 	}
 
 	size_t Cardinality() const {
@@ -131,7 +127,7 @@ void processFile(const std::string &filename, Solver &solver) {
 }
 
 int main(int argc, char **argv) {
-	std::srand(13327);
+	std::srand(1327);
 	if (argc < 2)
 		return 0;
 	auto StringHash = std::hash<std::string>();
@@ -142,14 +138,15 @@ int main(int argc, char **argv) {
 	std::cout << "naive " << naive.Cardinality() << std::endl;
 	std::cout << "flajolet " << solver.Cardinality() << std::endl;
 
-	size_t total_funcs = 50;
-	auto vecs = getHashFunctions(total_funcs, R);
+	size_t total_funcs = 100;
+	size_t samples = 100000;
+	auto vecs = getHashFunctions(total_funcs, samples);
 	std::vector<std::function<size_t(const std::string &)>> hfuncs;
 	for (size_t i = 0; i < total_funcs; ++i) {
-		auto func = [&vecs, i, &StringHash] (const std::string &text) {
+		auto func = [&vecs, i, &StringHash, samples] (const std::string &text) {
 			const auto &vec = vecs[i];
 			size_t hash = StringHash(text);
-			return vec[hash % R];
+			return vec[hash % samples];
 		};
 		hfuncs.push_back(func);
 	}
