@@ -8,7 +8,7 @@
 #include <fstream>
 #include <algorithm>
 
-constexpr size_t R = 1200000;
+constexpr size_t R = 64;
 
 std::vector<std::vector<size_t>> getHashFunctions(size_t functions_count, size_t radix) {
 	std::vector<std::vector<size_t>> result;
@@ -38,18 +38,28 @@ private:
 	std::function<size_t(const T&)> hashfunc;
 	static constexpr double phi = 0.77351;
 
+	size_t findFirstSignBit(size_t value) const {
+		value >>= 1;
+		size_t i = 1;
+		while (!(value & 1) && i < R) {
+			value >>= 1;
+			++i;
+		}
+		return i;
+	}
+
 public:
 	FMCardinalitySolver(const std::function<size_t(const T&)> &f) : bset(), hashfunc(f) {
 	};
 
 	void Add(const T& value) {
 		size_t hash = hashfunc(value);
-		bset.set(hash % R);
+		bset.set(findFirstSignBit(hash));
 	}
 
 	size_t Cardinality() const {
 		size_t i = 0;
-		for (i = 0; i < R; ++i) {
+		for (i = R; i > 0; --i) {
 			if (bset[i]) {
 				break;
 			}
@@ -57,7 +67,7 @@ public:
 		if (i == R) {
 			i = 0;
 		}
-		return ceil(double(2^i) / phi);
+		return ceil(double(1<<i) / phi);
 	}
 };
 
