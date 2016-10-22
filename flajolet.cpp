@@ -71,11 +71,10 @@ template <typename T>
 class MedianFMCardinalitySolver {
 private:
 	std::vector<FMCardinalitySolver<T>> solvers;
-	std::vector<std::function<size_t(const T&)>> hashfuncs;
 
 public:
-	MedianFMCardinalitySolver(const std::vector<std::function<size_t(const T&)>> v_f) : solvers(), hashfuncs(v_f) {
-		for (const auto &f : hashfuncs) {
+	MedianFMCardinalitySolver(const std::vector<std::function<size_t(const T&)>> v_f) : solvers() {
+		for (const auto &f :v_f) {
 			solvers.push_back(FMCardinalitySolver<T>(f));
 		}
 	};
